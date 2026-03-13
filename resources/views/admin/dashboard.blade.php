@@ -30,13 +30,6 @@
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="mb-0">Dashboard Admin</h2>
-            <p class="text-muted">Selamat datang di panel admin</p>
-        </div>
-    </div>
-
     <div class="row g-3 mb-4">
 
         <div class="col-md-3">
@@ -145,25 +138,38 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="waktu_mulai" class="form-label">Waktu Mulai Presensi</label>
-                                <input type="time" name="waktu_mulai" id="waktu_mulai" class="form-control" required readonly>
-                                <small class="text-muted">Waktu realtime saat ini</small>
+                                <div class="form-control bg-light" id="waktu_mulai_display">{{ date('H:i') }}</div>
+                                <small class="text-muted">Otomatis mengikuti jam realtime saat ini</small>
+                                <input type="hidden" name="waktu_mulai" id="waktu_mulai" value="{{ date('H:i') }}" required>
                                 @error('waktu_mulai')
                                     <div class="text-danger small">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label for="durasi_hadir" class="form-label">Durasi Hadir (menit)</label>
+                                <input type="number" name="durasi_hadir" id="durasi_hadir" class="form-control" min="1" max="120" value="30" required>
+                                @error('durasi_hadir')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label for="durasi_maksimal" class="form-label">Durasi Maksimal (menit)</label>
+                                <input type="number" name="durasi_maksimal" id="durasi_maksimal" class="form-control" min="1" max="180" value="60" required>
+                                @error('durasi_maksimal')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
                             <div class="col-md-12">
                                 <div class="alert alert-info mb-0">
-                                    <strong>Durasi Presensi: 30 Menit</strong>
+                                    <strong>Durasi Presensi (Input Menit)</strong>
                                     <ul class="mb-0 mt-2">
-                                        <li>0-30 menit dari waktu mulai = <span class="badge bg-success">Hadir Tepat Waktu</span></li>
-                                        <li>30-60 menit dari waktu mulai = <span class="badge bg-warning">Terlambat</span></li>
-                                        <li>Lebih dari 60 menit = <span class="badge bg-danger">QR Code Tidak Valid</span></li>
+                                        <li>0 s/d Durasi Hadir dari waktu mulai = <span class="badge bg-success">Hadir Tepat Waktu</span></li>
+                                        <li>Di atas Durasi Hadir s/d Durasi Maksimal = <span class="badge bg-warning">Terlambat</span></li>
+                                        <li>Lebih dari Durasi Maksimal = <span class="badge bg-danger">QR Code Tidak Valid</span></li>
                                     </ul>
                                 </div>
-                                <input type="hidden" name="durasi_hadir" value="30">
-                                <input type="hidden" name="durasi_maksimal" value="60">
                             </div>
                         </div>
                         <div class="mt-3">
@@ -322,11 +328,16 @@
         document.getElementById('realtime-clock').textContent = waktu;
         document.getElementById('realtime-date').textContent = tanggalLengkap;
 
-        // Update waktu mulai presensi dengan waktu realtime (HH:MM format)
         const waktuMulaiInput = document.getElementById('waktu_mulai');
         if (waktuMulaiInput) {
             waktuMulaiInput.value = `${jam}:${menit}`;
         }
+
+        const waktuMulaiDisplay = document.getElementById('waktu_mulai_display');
+        if (waktuMulaiDisplay) {
+            waktuMulaiDisplay.textContent = `${jam}:${menit}`;
+        }
+
     }
 
     // Update setiap detik

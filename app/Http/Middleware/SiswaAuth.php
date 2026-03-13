@@ -15,6 +15,10 @@ class SiswaAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (session('admin_logged_in') && !session('siswa_logged_in')) {
+            return redirect('/admin/dashboard');
+        }
+
         if (!session('siswa_logged_in')) {
             return redirect('/login')->withErrors([
                 'auth' => 'Silakan login terlebih dahulu.',

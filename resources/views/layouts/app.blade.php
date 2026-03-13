@@ -18,7 +18,7 @@
         Student Attendance
     </h5>
 
-    @if(session('admin_logged_in'))
+    @if(request()->is('admin/*'))
         {{-- Menu untuk Admin --}}
         <a href="{{ route('admin.dashboard') }}" class="nav-link text-dark">
             <i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
@@ -38,6 +38,13 @@
             <i class="bi bi-file-earmark-text me-2"></i>Laporan</a>
         <a href="{{ route('profile.index') }}" class="nav-link text-dark">
             <i class="bi bi-person-circle me-2"></i>Profil</a>
+
+        <form method="POST" action="{{ route('logout') }}" class="mt-2">
+            @csrf
+            <button type="submit" class="nav-link text-dark border-0 bg-transparent w-100 text-start">
+                <i class="bi bi-box-arrow-right me-2"></i>Logout
+            </button>
+        </form>
     @endif
 
 </div>

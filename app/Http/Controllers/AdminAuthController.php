@@ -31,7 +31,12 @@ class AdminAuthController extends Controller
 
         // Simple hardcoded credentials check
         if ($request->username === 'admin' && $request->password === 'admin') {
+            // Pastikan sesi siswa dibersihkan agar role tidak tercampur
+            session()->forget(['siswa_logged_in', 'siswa_nis', 'siswa_nama']);
             session(['admin_logged_in' => true]);
+
+            $request->session()->regenerate();
+
             return redirect('/admin/dashboard')->with('success', 'Login berhasil!');
         }
 
@@ -46,6 +51,7 @@ class AdminAuthController extends Controller
     public function logout()
     {
         session()->forget('admin_logged_in');
+        session()->regenerate();
 
         return redirect('/admin/login')->with('success', 'Logout berhasil!');
     }

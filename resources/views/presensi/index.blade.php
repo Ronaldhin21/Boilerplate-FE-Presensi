@@ -7,10 +7,10 @@
 
     <h5 class="mb-0">Data Presensi</h5>
 
-    <form method="GET" action="{{ route('dashboard') }}">
+    <form method="GET" action="{{ route('presensi.index') }}">
         <div class="input-group">
-            <input type="date" 
-                   name="tanggal" 
+            <input type="date"
+                   name="tanggal"
                    class="form-control"
                    value="{{ request('tanggal') }}">
             <button class="btn btn-primary">

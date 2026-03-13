@@ -20,7 +20,7 @@ class QrCodeController extends Controller
             'tanggal' => 'required|date',
             'waktu_mulai' => 'required',
             'durasi_hadir' => 'required|integer|min:1|max:120',
-            'durasi_maksimal' => 'required|integer|min:1|max:180',
+            'durasi_maksimal' => 'required|integer|min:1|max:180|gt:durasi_hadir',
         ]);
 
         // Parse waktu mulai
@@ -95,12 +95,14 @@ class QrCodeController extends Controller
         $waktuPresensi = Carbon::now();
         $batasHadir = Carbon::parse($qrCode->tanggal . ' ' . $qrCode->batas_hadir);
         $batasTerlambat = Carbon::parse($qrCode->tanggal . ' ' . $qrCode->batas_terlambat);
+        $durasiMaksimal = Carbon::parse($qrCode->tanggal . ' ' . $qrCode->waktu_mulai)
+            ->diffInMinutes($batasTerlambat);
 
-        // Cek apakah sudah melewati batas maksimal (>60 menit)
+        // Cek apakah sudah melewati batas maksimal dari input menit
         if ($waktuPresensi->greaterThan($batasTerlambat)) {
             return response()->json([
                 'success' => false,
-                'message' => 'QR Code sudah tidak valid. Waktu presensi telah berakhir (lebih dari 60 menit).',
+                'message' => "QR Code sudah tidak valid. Waktu presensi telah berakhir (lebih dari {$durasiMaksimal} menit).",
             ], 400);
         }
 
@@ -109,7 +111,7 @@ class QrCodeController extends Controller
         $keterangan = 'Hadir tepat waktu';
 
         if ($waktuPresensi->greaterThan($batasHadir)) {
-            // Lebih dari 30 menit tapi kurang dari 60 menit = terlambat
+            // Lewat batas hadir sampai batas maksimal = terlambat
             $status = 'terlambat';
             $menitTerlambat = $waktuPresensi->diffInMinutes($batasHadir);
             $keterangan = "Terlambat {$menitTerlambat} menit";

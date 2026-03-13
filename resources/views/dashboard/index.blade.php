@@ -6,6 +6,25 @@
 
 <div class="container-fluid">
 
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">{{ session('siswa_nama', '-') }}</h5>
+                        <small class="text-muted">Kelas {{ session('siswa_kelas', '-') }} - Rombel {{ session('siswa_rombel', '-') }}</small>
+                    </div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Real-time Clock -->
     <div class="row mb-3">
         <div class="col-12">

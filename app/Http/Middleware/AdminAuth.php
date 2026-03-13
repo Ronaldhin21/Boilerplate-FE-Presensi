@@ -15,6 +15,10 @@ class AdminAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (session('siswa_logged_in') && !session('admin_logged_in')) {
+            return redirect('/dashboard');
+        }
+
         if (!session('admin_logged_in')) {
             return redirect('/admin/login')->withErrors([
                 'auth' => 'Silakan login sebagai admin terlebih dahulu.',

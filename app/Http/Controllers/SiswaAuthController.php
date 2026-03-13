@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Siswa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class SiswaAuthController extends Controller
 {
@@ -25,24 +27,36 @@ class SiswaAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'nis' => 'required',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        // Simple hardcoded credentials check (demo purpose)
-        // Nanti bisa diganti dengan database check
-        if ($request->nis === '12345' && $request->password === 'siswa') {
+        $siswa = Siswa::where('email', strtolower(trim((string) $request->email)))->first();
+
+        if ($siswa && Hash::check((string) $request->password, (string) $siswa->password)) {
+            if (!$siswa->email_verified_at) {
+                return back()->withErrors([
+                    'login' => 'Email belum diverifikasi. Silakan verifikasi kode email terlebih dahulu.',
+                ])->withInput($request->only('email'));
+            }
+
+            session()->forget('admin_logged_in');
             session([
                 'siswa_logged_in' => true,
-                'siswa_nis' => $request->nis,
-                'siswa_nama' => 'Siswa Demo'
+                'siswa_nis' => $siswa->nis,
+                'siswa_nama' => $siswa->nama_lengkap,
+                'siswa_kelas' => $siswa->kelas,
+                'siswa_rombel' => $siswa->rombel_kelas,
             ]);
+
+            $request->session()->regenerate();
+
             return redirect('/dashboard')->with('success', 'Login berhasil!');
         }
 
         return back()->withErrors([
-            'login' => 'NIS atau password salah.',
-        ])->withInput($request->only('nis'));
+            'login' => 'Email atau password salah.',
+        ])->withInput($request->only('email'));
     }
 
     /**
@@ -50,7 +64,8 @@ class SiswaAuthController extends Controller
      */
     public function logout()
     {
-        session()->forget(['siswa_logged_in', 'siswa_nis', 'siswa_nama']);
+        session()->forget(['siswa_logged_in', 'siswa_nis', 'siswa_nama', 'siswa_kelas', 'siswa_rombel']);
+        session()->regenerate();
 
         return redirect('/login')->with('success', 'Logout berhasil!');
     }

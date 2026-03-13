@@ -3,54 +3,85 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Crypt;
 
 class Siswa extends Model
 {
     protected $table = 'siswas';
 
     protected $fillable = [
+        'nis',
+        'first_name',
+        'last_name',
+        'father_name',
+        'mother_name',
+        'place_of_birth',
+        'date_of_birth',
+        'religion',
         'kelas',
-        'rombel',
-        'data',
+        'rombel_kelas',
+        'alamat',
+        'nomor_telepon',
+        'email',
+        'password',
+        'password_plain_encrypted',
+        'otp_code',
+        'otp_expires_at',
+        'email_verified_at',
     ];
 
     protected $casts = [
-        'data' => 'array', // Auto-cast JSON to array
+        'date_of_birth' => 'date',
+        'otp_expires_at' => 'datetime',
+        'email_verified_at' => 'datetime',
     ];
 
-    /**
-     * Relasi dengan presensi
-     * Gunakan NIS dari JSON data
-     */
+    protected $hidden = [
+        'password',
+        'password_plain_encrypted',
+        'otp_code',
+    ];
+
     public function presensis()
     {
-        return $this->hasMany(Presensi::class, 'siswa_nis', 'data->nis');
+        return $this->hasMany(Presensi::class, 'siswa_nis', 'nis');
     }
 
-    /**
-     * Accessor untuk mendapatkan field dari JSON data
-     */
-    public function __get($key)
+    public function getNamaLengkapAttribute(): string
     {
-        // Cek dulu di attribute biasa
-        $value = parent::__get($key);
+        return trim(($this->first_name ?? '').' '.($this->last_name ?? ''));
+    }
 
-        // Jika tidak ada, coba cari di JSON data
-        if ($value === null && isset($this->data[$key])) {
-            return $this->data[$key];
+    public function getPasswordRegisterAttribute(): ?string
+    {
+        if (!$this->password_plain_encrypted) {
+            return null;
         }
 
-        return $value;
+        try {
+            return Crypt::decryptString($this->password_plain_encrypted);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
-    /**
-     * Scope untuk pencarian di JSON data
-     */
-    public function scopeSearchInData($query, $search)
+    public function scopeSearch(Builder $query, string $search): Builder
     {
-        return $query->where(function ($q) use ($search) {
-            // SQLite: gunakan LIKE pada kolom data (JSON as text)
-            $q->where('data', 'LIKE', "%{$search}%");
+        return $query->where(function (Builder $q) use ($search) {
+            $q->where('nis', 'like', "%{$search}%")
+                ->orWhere('first_name', 'like', "%{$search}%")
+                ->orWhere('last_name', 'like', "%{$search}%")
+                ->orWhere('father_name', 'like', "%{$search}%")
+                ->orWhere('mother_name', 'like', "%{$search}%")
+                ->orWhere('alamat', 'like', "%{$search}%")
+                ->orWhere('nomor_telepon', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
         });
+    }
+
+    public function scopeVerified(Builder $query): Builder
+    {
+        return $query->whereNotNull('email_verified_at');
     }
 }
